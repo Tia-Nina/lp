@@ -1,0 +1,152 @@
+<html>
+<head>
+  <style>
+    body{
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    #area {
+      display: flex;
+      flex-direction: column;
+    }
+    table {
+      border-collapse: collapse;
+      font-size: small;
+      width: 90%;
+      height: 80%;
+      margin: 5%;
+    }
+    th, td {
+      border: 1px solid #dddddd;
+      text-align: center;
+      font-weight: bolder;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    #menu{
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+  <div id="menu">
+    <div>
+      <span>第一步：上传《生成送货单》</span>
+      <input type="file" id="fileInput" accept=".xlsx, .xls" />
+    </div>
+    <div>
+      <span>第二步：上传《装配计划线束需求明细》</span>
+      <input type="file" id="file2Input" accept=".xlsx, .xls" />
+    </div>
+  </div>
+  <div id="area">
+    <div>
+      <button id="export">导出</button>
+    </div>
+    <div>
+      <table id="table">
+        <thead>
+          <tr id="table_head"></tr>
+        </thead>
+        <tbody id="table_body"></tbody>
+      </table>
+    </div>
+  </div>
+</body>
+<script>
+  let headers = []
+  let data = []
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0]
+      let reader = new FileReader()
+      reader.onload = function(e) {
+        const rawData = new Uint8Array(e.target.result)
+        const workbook = XLSX.read(rawData, { type: 'array' })
+        const sheetName = workbook.SheetNames[0]
+        const sheet = workbook.Sheets[sheetName]
+        data = XLSX.utils.sheet_to_json(sheet)
+        if(data.length == 0){
+          alert('文件为空！')
+          return
+        }
+        headers = Object.keys(data[0])
+        const table_head = document.getElementById('table_head')
+        for(const header of headers){
+          const head = document.createElement('th')
+          head.innerText = header
+          table_head.appendChild(head)
+        }
+        createTable()
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    document.getElementById('file2Input').addEventListener('change', function(e) {
+      const file = e.target.files[0]
+      let reader = new FileReader()
+      reader.onload = function(e) {
+        const rawData = new Uint8Array(e.target.result)
+        const workbook = XLSX.read(rawData, { type: 'array' })
+        const sheetName = workbook.SheetNames[0]
+        const sheet = workbook.Sheets[sheetName]
+        const parsedData = XLSX.utils.sheet_to_json(sheet)
+        let matched = 0
+
+        for(const aData of parsedData){
+          let no = aData["序号"].toString()
+          if(no.length == 1) no = "000" + no
+          if(no.length == 2) no = "00" + no
+          if(no.length == 3) no = "0" + no
+          const matcher = aData["装配计划号"] + "-" + no
+          if(data.filter(i => i["装配号"] == matcher).length == 0){
+            continue
+          }
+          for(let ori of data){
+            if(ori["装配号"] == matcher && ori["物料编码"] == aData["物料编码"]){
+              ori["送货数量"] = aData["总量"]
+              matched++
+              break
+            }
+          }
+        }
+
+        createTable()
+        alert('完成了' + matched + '次匹配')
+      };
+      reader.readAsArrayBuffer(file);
+
+    })
+
+    document.getElementById('export').addEventListener('click', function(e) {
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+      XLSX.writeFile(workbook, "送货单已处理.xlsx");
+    })
+  });
+
+  function createTable(){
+    const table_body = document.getElementById('table_body')
+    while (table_body.firstChild) {
+      table_body.removeChild(table_body.firstChild);
+    }
+    for(const rowData of data){
+      const row = document.createElement('tr')
+      for(const header of headers){
+        const block = document.createElement('th')
+        block.innerText = rowData[header]
+        row.appendChild(block)
+      }
+      table_body.appendChild(row)
+    }
+  }
+
+</script>
+</html>
