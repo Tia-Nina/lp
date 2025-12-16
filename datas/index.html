@@ -49,6 +49,14 @@
       <button id="export">导出</button>
     </div>
     <div>
+      <table id="matched_table">
+        <thead>
+          <tr id="matched_table_head"></tr>
+        </thead>
+        <tbody id="matched_table_body"></tbody>
+      </table>
+    </div>
+    <div>
       <table id="table">
         <thead>
           <tr id="table_head"></tr>
@@ -61,6 +69,7 @@
 <script>
   let headers = []
   let data = []
+  let data_matched = []
 
   document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('fileInput').addEventListener('change', function(e) {
@@ -76,6 +85,12 @@
           alert('文件为空！')
           return
         }
+        for(const index in data){
+          const d = data[index]
+          const getMatch = d["装配号"].toString().trim() == "" ? d["计生计划号"] : d["装配号"]
+          d["送货单备注"] = getMatch.substr(5)
+        }
+
         headers = Object.keys(data[0])
         const table_head = document.getElementById('table_head')
         for(const header of headers){
@@ -108,36 +123,49 @@
           if(data.filter(i => i["装配号"] == matcher).length == 0){
             continue
           }
-          for(let ori of data){
-            if(ori["装配号"] == matcher && ori["物料编码"] == aData["物料编码"]){
+          for(let oriIndex in data){
+            const ori = data[oriIndex]
+            const getMatch = ori["装配号"].toString().trim() == "" ? ori["计生计划号"] : ori["装配号"]
+            if((getMatch == matcher || getMatch == matcher) && ori["物料编码"] == aData["物料编码"]){
               ori["送货数量"] = aData["总量"]
+              data_matched.push(ori)
+              data.splice(oriIndex, 1)
               matched++
               break
             }
           }
         }
 
+        const table_head = document.getElementById('matched_table_head')
+        for(const header of headers){
+          const head = document.createElement('th')
+          head.innerText = header
+          table_head.appendChild(head)
+        }
+
+        createTable('match')
         createTable()
         alert('完成了' + matched + '次匹配')
       };
       reader.readAsArrayBuffer(file);
-
     })
 
     document.getElementById('export').addEventListener('click', function(e) {
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-      XLSX.writeFile(workbook, "送货单已处理.xlsx");
+      const worksheet1 = XLSX.utils.json_to_sheet(data_matched)
+      const worksheet2 = XLSX.utils.json_to_sheet(data)
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet1, "匹配结果")
+      XLSX.utils.book_append_sheet(workbook, worksheet2, "其他结果")
+      XLSX.writeFile(workbook, "送货单已处理.xlsx")
     })
   });
 
-  function createTable(){
-    const table_body = document.getElementById('table_body')
+  function createTable(which = 'all'){
+    const table_body = document.getElementById(which == 'all' ? 'table_body' : 'matched_table_body')
     while (table_body.firstChild) {
       table_body.removeChild(table_body.firstChild);
     }
-    for(const rowData of data){
+    for(const rowData of which == 'all' ? data : data_matched){
       const row = document.createElement('tr')
       for(const header of headers){
         const block = document.createElement('th')
