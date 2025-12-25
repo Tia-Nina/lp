@@ -89,6 +89,8 @@
           const d = data[index]
           const getMatch = d["装配号"].toString().trim() == "" ? d["计生计划号"] : d["装配号"]
           d["送货单备注"] = getMatch.substr(5)
+          d["生产批次号"] = "20250924"
+          d["发货仓库编码"] = "SCK0260"
         }
 
         headers = Object.keys(data[0])
