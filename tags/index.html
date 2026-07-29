@@ -26,6 +26,26 @@
             gap: 6mm;
         }
 
+        .page {
+            display: grid;
+
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+
+            width: 100%;
+            height: calc(210mm - 16mm);   /* A4横向高度210mm，减去上下边距 */
+
+            gap: 6mm;
+
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .page:last-child {
+            page-break-after: auto;
+            break-after: auto;
+        }
+
         .aTable {
             border: 1px solid transparent;
             break-inside: avoid;
@@ -133,6 +153,7 @@
                         var img = document.createElement("img");
                         img.src = 'https://picdl.sunbangyan.cn/2023/11/18/d7a30ef05dfe0b9736b015ccd8f340c4.jpg';
                         img.width = '60';
+                        img.height = '60'
                         td4.appendChild(document.createElement("br"));
                         td4.appendChild(img);
                         td4.appendChild(document.createElement("br"));
@@ -166,7 +187,7 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.load('DOMContentLoaded', function() {
         document.getElementById('fileInput').addEventListener('change', function(e) {
             var file = e.target.files[0];
             var reader = new FileReader();
