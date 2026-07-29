@@ -1,46 +1,64 @@
 <html>
 <head>
     <style>
+        @page {
+            size: A4 landscape;
+            margin: 8mm;
+        }
+
+        .pageBreak{
+            break-after:page;
+        }
+
         body{
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        div{
-            height: 29%;
-            width: 46%;
-            margin: 1%;
-            display: inline-block;
+        #content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+
+            width: 100%;
+            height: 100%;
+            gap: 6mm;
+        }
+
+        .aTable {
+            border: 1px solid transparent;
+            break-inside: avoid;
+            page-break-inside: avoid;
+            margin: 5%
         }
 
         table {
+            width: 100%;
+            height: 100%;
             border-collapse: collapse;
-            font-size: small;
-            width: 90%;
-            height: 80%;
-            margin: 5%;
         }
-      
+
         th, td {
             border: 1px solid #dddddd;
             text-align: center;
             font-weight: bolder;
         }
-      
+
         th {
             background-color: #f2f2f2;
         }
-      </style>
+    </style>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 </head>
-    
+
 <body>
     <div id="menu">
         <input type="file" id="fileInput" accept=".xlsx, .xls" />
     </div>
+    <div id="content"></div>
 </body>
-<script>    
+<script>
     let groupedData;
     let filePath;
     let extraNote;
@@ -63,6 +81,8 @@
         var table_row_2 = document.createElement("tr");
         var table_row_3 = document.createElement("tr");
         var table_row_4 = document.createElement("tr");
+
+        const content = document.getElementById("content")
 
         for (var i in groupedData) {
 
@@ -120,10 +140,10 @@
                         td4.appendChild(document.createTextNode(extraNote));
                         row.appendChild(td4);
                     }
-                    
+
                     table.appendChild(row);
                 })
-    
+
                 var row = document.createElement("tr");
                 var td = document.createElement("td");
                 td.appendChild(document.createTextNode(groupedData[i][0].taskNo));
@@ -132,8 +152,15 @@
                 table.appendChild(row);
 
                 var d = document.createElement("div");
+                d.classList = "aTable"
                 d.appendChild(table);
-                document.body.appendChild(d);
+                content.appendChild(d);
+
+                if ((i + 1) % 6 === 0) {
+                    let page = document.createElement("div");
+                    page.className = "pageBreak";
+                    content.appendChild(page);
+                }
             }
 
         }
@@ -166,12 +193,12 @@
                 groupedData = arrGroup(jsonArray, (item) => item.taskNo + '&&' + item.special + '&&' + item.no + '&&' + item.planNo);
                 console.log(groupedData)
                 extraNote = prompt("输入二维码位置显示的文字");
-                createTable();
                 document.getElementById("menu").style.display = 'none';
+                createTable();
             };
             reader.readAsArrayBuffer(file);
         });
     });
-    
+
 </script>
 </html>
