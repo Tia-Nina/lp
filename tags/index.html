@@ -100,13 +100,29 @@
     <body>
         <div id="menu">
             <input type="file" id="fileInput" accept=".xlsx,.xls" />
+
+            <div>
+                <div>
+                    <label>数量显示模式</label>
+                    <select id="quantityMode">
+                        <option value="1">固定为1</option>
+                        <option value="read">从表格读取</option>
+                        <option value="dyn">依次动态选择</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>二维码下方文字</label>
+                    <input type="text" id="qrcodeText" placeholder="二维码下方文字" />
+                </div>
+            </div>
         </div>
 
         <div id="content"></div>
 
         <script>
             let groupedData;
-            let extraNote;
+            let qrcodeText;
 
             function arrGroup(arr, fn) {
                 const obj = {};
@@ -123,6 +139,7 @@
             }
 
             function createTable() {
+                const quantityMode = document.getElementById("quantityMode").value;
                 const content = document.getElementById("content");
 
                 let page = null;
@@ -169,8 +186,20 @@
                             row.appendChild(td1);
 
                             let td2 = document.createElement("td");
+                            td2.id = "quantity_" + i + "_" + j + "_" + index;
 
-                            td2.textContent = material.totalAmount;
+                            if(quantityMode == "1") td2.textContent = 1
+                            else if(quantityMode == 'read') td2.textContent = material.totalAmount
+                            else if(quantityMode == "dyn") {
+                                td2.textContent = material.totalAmount
+                                td2.style.cursor = "pointer"
+
+                                td2.addEventListener("click", function(){
+                                    this.textContent = this.textContent == 1 
+                                        ? material.totalAmount 
+                                        : 1
+                                });
+                            }
 
                             row.appendChild(td2);
 
@@ -220,7 +249,7 @@
 
                                 td4.appendChild(document.createElement("br"));
 
-                                td4.appendChild(document.createTextNode(extraNote));
+                                td4.appendChild(document.createTextNode(qrcodeText));
 
                                 td4.rowSpan = groupedData[i].length + 1;
 
@@ -286,7 +315,8 @@
                         (item) => item.taskNo + "&&" + item.special + "&&" + item.no + "&&" + item.planNo
                     );
 
-                    extraNote = prompt("输入在二维码下方要显示的文字");
+                    // qrcodeText = prompt("输入在二维码下方要显示的文字");
+                    qrcodeText = document.getElementById("qrcodeText").value
 
                     document.getElementById("menu").style.display = "none";
 
