@@ -1,7 +1,7 @@
 let groupedData;
 let qrcodeText;
 
-let qrcodeTextOptions = ["电器分装线", "内饰增高线", "预装线", "分装线", "越野车A线", "越野车B线", "越野车B-10线"];
+let qrcodeTextOptions = ["电器分装线", "内饰高架线", "预装线", "分装线", "越野车A线", "越野车B线", "越野车B-10线"];
 if (localStorage.getItem("qrcodeTextOptions")) {
   qrcodeTextOptions = JSON.parse(localStorage.getItem("qrcodeTextOptions"));
   const options = document.getElementById("qrcodeTextOptions");
