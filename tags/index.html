@@ -15,13 +15,23 @@
 
             <div class="setting-group">
                 <div class="setting-item">
+                    <label class="setting-label" for="tagMode">
+                        标签数量模式
+                    </label>
+                    <select id="tagMode">
+                        <option id="tagMode_decrease" value="decrease" selected>按用量递减</option>
+                        <option id="tagMode_fix" value="fix">按最大用量固定</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
                     <label class="setting-label" for="quantityMode">
                         数量显示模式
                     </label>
                     <select id="quantityMode">
-                        <option value="1">固定为1</option>
-                        <option value="read">从表格读取</option>
-                        <option value="dyn">依次动态选择</option>
+                        <option id="quantityMode_read" value="read" selected>从表格读取</option>
+                        <option id="quantityMode_1" value="1">固定为1</option>
+                        <option id="quantityMode_dyn" value="dyn">依次动态选择</option>
                     </select>
                 </div>
 
