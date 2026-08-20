@@ -34,8 +34,10 @@ function arrGroup(arr, fn) {
 }
 
 function createTable() {
+  const tagMode = document.getElementById("tagMode").value;
   const quantityMode = document.getElementById("quantityMode").value;
   const content = document.getElementById("content");
+  document.title = document.getElementById(`tagMode_${tagMode}`).getHTML() + " " + document.getElementById(`quantityMode_${quantityMode}`).getHTML() + " " + document.getElementById("qrcodeText").value;
 
   let page = null;
 
@@ -75,13 +77,7 @@ function createTable() {
       table.appendChild(header);
 
       for (const index in groupedData[i]) {
-        /*
-                console.log("=================")
-                console.log("index: " + index)
-                console.log("currentCount: " + printCount[index])
-                */
-
-        if (printCount[index] <= 0) continue;
+        if (tagMode == "decrease" && printCount[index] <= 0) continue;
 
         const material = groupedData[i][index];
         let row = document.createElement("tr");
@@ -105,7 +101,7 @@ function createTable() {
 
         row.appendChild(td2);
 
-        const rowSpan = groupedData[i].filter((_, index) => printCount[index] > 0).length;
+        const rowSpan = tagMode == "decrease" ? groupedData[i].filter((_, index) => printCount[index] > 0).length : groupedData[i].length;
         if (index == 0) {
           let td3 = document.createElement("td");
           let span = document.createElement("span");
@@ -123,7 +119,7 @@ function createTable() {
 
         if (index == 0) {
           let td4 = document.createElement("td");
-          td4.textContent = material.totalAmount + "-" + (j + 1);
+          td4.textContent = (tagMode == "fix" ? 1 : material.totalAmount) + "-" + (j + 1);
           let img = document.createElement("img");
           // img.src = "https://picdl.sunbangyan.cn/2023/11/18/d7a30ef05dfe0b9736b015ccd8f340c4.jpg"
           img.src = "img.png";
@@ -149,6 +145,8 @@ function createTable() {
       box.className = "aTable";
       box.appendChild(table);
       addLabel(box);
+
+      if (tagMode == "fix") break;
     }
   }
 }
